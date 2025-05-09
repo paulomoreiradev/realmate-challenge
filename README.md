@@ -135,7 +135,6 @@ poetry install
 3.	Ative o Poetry shell para interagir mais facilmente com o terminal e ativar o ambiente virtual:
 
 ```bash
-cd realmate-challenge
 poetry shell
 ```
 
