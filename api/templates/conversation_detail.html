@@ -1,10 +1,11 @@
+{% load static %}
 <!-- conversation_detail.html -->
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ conversation.name }}</title>
+    <title>{{ conversation }}</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <style>
@@ -266,7 +267,6 @@
 </style>
 <body>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet" />
-
     <div class="container">
     <div class="row clearfix">
         <div class="col-lg-12">
@@ -291,27 +291,34 @@
                         </div>
                     </div>
                     <div class="chat-history">
-                        <ul class="m-b-0">
-                            {% for message in messages %}
-                                {% if message.state == "RECEIVED" %}
-                                    <!-- Mensagem enviada (direita) -->
-                                    <li class="clearfix">
-                                        <div class="message-data text-right">
-                                            <span class="message-data-time">{{ message.timestamp|date:"H:i, d/m/Y" }}</span>
-                                        </div>
-                                        <div class="message other-message float-right">{{ message.content }}</div>
-                                    </li>
-                                {% else %}
-                                    <!-- Mensagem recebida (esquerda) -->
-                                    <li class="clearfix">
-                                        <div class="message-data">
-                                            <span class="message-data-time">{{ message.timestamp|date:"H:i, d/m/Y" }}</span>
-                                        </div>
-                                        <div class="message my-message">{{ message.content }}</div>
-                                    </li>
-                                {% endif %}
-                            {% endfor %}
-                        </ul>
+                        {% if messsages %}
+                            <ul class="m-b-0">
+                                {% for message in messages %}
+                                    {% if message.direction == "RECEIVED" %}
+                                        <!-- Mensagem enviada (direita) -->
+                                        <li class="clearfix">
+                                            <div class="message-data text-right">
+                                                <span class="message-data-time">{{ message.timestamp|date:"H:i, d/m/Y" }}</span>
+                                            </div>
+                                            <div class="message other-message float-right">{{ message.content }}</div>
+                                        </li>
+                                    {% else %}
+                                        <!-- Mensagem recebida (esquerda) -->
+                                        <li class="clearfix">
+                                            <div class="message-data">
+                                                <span class="message-data-time">{{ message.timestamp|date:"H:i, d/m/Y" }}</span>
+                                            </div>
+                                            <div class="message my-message">{{ message.content }}</div>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                                <div class="w-100 d-flex justify-content-center flex-column align-items-center">
+                                    <h6 class="mb-3 text-muted">No messages received/sent.</h6>
+                                    <img style="height: 400px; width: auto;" src="{% static 'img/no_messages.svg' %}" alt="Conversation illustration">
+                                </div>
+                            {% endif %}
                     </div>
                 </div>
             </div>

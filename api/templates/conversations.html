@@ -1,4 +1,4 @@
-<!-- conversation_list.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -16,34 +16,41 @@
     <div class="container mt-5">
         <div class="card p-3">
             <h2 class="mx-2 my-3">Conversation List</h2>
-            <table class="table">
-                <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">ID</th>
-                    <th scope="col">Messages Count</th>
-                    <th scope="col">Start date</th>
-                    <th scope="col">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for conversation in object_list %}
+            {% if object_list %}
+                <table class="table">
+                    <thead>
                     <tr>
-                        <th scope="row">{{ forloop.counter}}</th>
-                        <td><a href="{% url 'conversation_detail' conversation.id %}">{{ conversation.id }}</a></td>
-                        <td>{{ conversation.messages.count }}</td>
-                        <td>{{ conversation.created_at }}</td>
-                        <td>
-                            {% if conversation.state == "CLOSED" %}
-                                <span class="badge badge-danger">{{conversation.state}}</span>
-                            {% else %}
-                                <span class="badge badge-success">{{conversation.state}}</span>
-                            {% endif %}
-                        </td>
+                        <th scope="col">#</th>
+                        <th scope="col">ID</th>
+                        <th scope="col">Messages Count</th>
+                        <th scope="col">Start date</th>
+                        <th scope="col">Status</th>
                     </tr>
-                  {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {% for conversation in object_list %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter}}</th>
+                            <td><a href="{% url 'conversation_detail' conversation.id %}">{{ conversation.id }}</a></td>
+                            <td>{{ conversation.messages.count }}</td>
+                            <td>{{ conversation.created_at }}</td>
+                            <td>
+                                {% if conversation.state == "CLOSED" %}
+                                    <span class="badge badge-danger">{{conversation.state}}</span>
+                                {% else %}
+                                    <span class="badge badge-success">{{conversation.state}}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="w-100 d-flex justify-content-center flex-column align-items-center">
+                    <h6 class="mb-3 text-muted">No conversations started.</h6>
+                    <img class="w-50" src="{% static 'img/no_conversation.svg' %}" alt="Conversation illustration">
+                </div>
+            {% endif %}
         </div>
 
     </div>

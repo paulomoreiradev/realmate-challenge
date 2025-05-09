@@ -10,86 +10,65 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from .models import Conversation, Message
-from .serializers import ConversationSerializer
+from .serializers import ConversationSerializer, CloseConversationSerializer, NewConversationSerializer, NewMessageSerializer
 
 logger = logging.getLogger(__name__)
 
 
 class WebhookView(APIView):
     def post(self, request):
-        logger.info("Recebido webhook: %s", request.data)
-
         event_type = request.data.get("type")
-        timestamp = request.data.get("timestamp")
-        data = request.data.get("data", {})
+
+        serializer_class = {
+            "NEW_CONVERSATION": NewConversationSerializer,
+            "NEW_MESSAGE": NewMessageSerializer,
+            "CLOSE_CONVERSATION": CloseConversationSerializer,
+        }.get(event_type)
+
+        if not serializer_class:
+            return Response({"error": "Unsupported event type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data["data"]
 
         try:
             if event_type == "NEW_CONVERSATION":
-                logger.info("Processando NEW_CONVERSATION")
-                conversation_id = uuid.UUID(data["id"])
-                Conversation.objects.create(id=conversation_id)
-                logger.info("Conversa criada com ID %s", conversation_id)
-                return Response({"status": "Conversation created"}, status=201)
+                conversation_id = data["id"]
+                _, created = Conversation.objects.get_or_create(id=conversation_id, defaults={"state": "OPEN"})
+                return Response({"status": "created" if created else "already exists"})
 
             elif event_type == "NEW_MESSAGE":
-                logger.info("Processando NEW_MESSAGE")
-                message_id = uuid.UUID(data["id"])
-                conversation_id = uuid.UUID(data["conversation_id"])
-                direction = data["direction"]
-                content = data["content"]
-                parsed_time = parse_datetime(timestamp)
-
-                logger.debug("Buscando conversa com ID %s", conversation_id)
-                conversation = Conversation.objects.filter(id=conversation_id).first()
-                if not conversation:
-                    logger.warning("Conversa não encontrada")
-                    return Response({"error": "Conversation not found"}, status=404)
+                conversation_id = data["conversation_id"]
+                conversation = get_object_or_404(Conversation, id=conversation_id)
 
                 if conversation.state == "CLOSED":
-                    logger.warning("Conversa está fechada")
-                    return Response({"error": "Conversation is closed"}, status=400)
+                    return Response({"error": "Conversation is closed."}, status=status.HTTP_403_FORBIDDEN)
 
-                if direction not in ["SENT", "RECEIVED"]:
-                    logger.warning("Direção inválida: %s", direction)
-                    return Response({"error": "Invalid direction"}, status=400)
-
-                Message.objects.create(
-                    id=message_id,
-                    conversation=conversation,
-                    state=direction,  # ✅ CORRETO
-                    content=content,
-                    timestamp=parsed_time
+                _, created = Message.objects.get_or_create(
+                    id=data["id"],
+                    defaults={
+                        "conversation": conversation,
+                        "direction": data["direction"],
+                        "content": data["content"]
+                    }
                 )
-                logger.info("Mensagem criada com ID %s", message_id)
-                return Response({"status": "Message created"}, status=201)
+                return Response({"status": "message created" if created else "message already exists"})
 
             elif event_type == "CLOSE_CONVERSATION":
-                logger.info("Processando CLOSE_CONVERSATION")
-                conversation_id = uuid.UUID(data["id"])
-                conversation = Conversation.objects.filter(id=conversation_id).first()
-
-                if not conversation:
-                    logger.warning("Conversa não encontrada para fechamento")
-                    return Response({"error": "Conversation not found"}, status=404)
-
+                conversation_id = data["id"]
+                conversation = get_object_or_404(Conversation, id=conversation_id)
                 conversation.state = "CLOSED"
                 conversation.save()
-                logger.info("Conversa fechada com ID %s", conversation_id)
-                return Response({"status": "Conversation closed"}, status=200)
+                return Response({"status": "conversation closed"})
 
-            else:
-                logger.warning("Tipo de evento desconhecido: %s", event_type)
-                return Response({"error": "Unknown event type"}, status=400)
-
-        except KeyError as e:
-            logger.error("Campo ausente: %s", str(e))
-            return Response({"error": f"Missing field: {str(e)}"}, status=400)
         except IntegrityError as e:
-            logger.error("Erro de integridade: %s", str(e))
-            return Response({"error": "ID already exists"}, status=400)
+            return Response({"error": "Integrity error"}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
-            logger.exception("Erro inesperado")
-            return Response({"error": "Unexpected error"}, status=500)
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ConversationDetailAPIView(APIView):
