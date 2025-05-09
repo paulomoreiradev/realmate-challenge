@@ -1,0 +1,51 @@
+<!-- conversation_list.html -->
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversations</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+    .badge{
+        min-width: 60px;
+    }
+</style>
+<body style="background-color:#f4f7f6;">
+    <div class="container mt-5">
+        <div class="card p-3">
+            <h2 class="mx-2 my-3">Conversation List</h2>
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Messages Count</th>
+                    <th scope="col">Start date</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for conversation in object_list %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter}}</th>
+                        <td><a href="{% url 'conversation_detail' conversation.id %}">{{ conversation.id }}</a></td>
+                        <td>{{ conversation.messages.count }}</td>
+                        <td>{{ conversation.created_at }}</td>
+                        <td>
+                            {% if conversation.state == "CLOSED" %}
+                                <span class="badge badge-danger">{{conversation.state}}</span>
+                            {% else %}
+                                <span class="badge badge-success">{{conversation.state}}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</body>
+</html>

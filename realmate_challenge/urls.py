@@ -17,7 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from api import views as api_views
+
+
 urlpatterns = [
+    path("", api_views.ConversationListView.as_view(), name="conversations"),
+    path("conversation/<slug:pk>", api_views.ConversationDetailView.as_view(), name="conversation_detail"),
     path('admin/', admin.site.urls),
-    path('api/', include('messages_api.urls')),
+    path('api/', include('api.urls')),
 ]
