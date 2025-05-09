@@ -132,19 +132,69 @@ cd realmate-challenge
 poetry install
 ```
 
-3.	Aplique as migrações no banco de dados SQLite:
+3.	Ative o Poetry shell para interagir mais facilmente com o terminal e ativar o ambiente virtual:
+
+```bash
+cd realmate-challenge
+poetry shell
+```
+
+
+4.	Aplique as migrações no banco de dados SQLite:
 
 ```bash
 python manage.py migrate
 ```
 
-4.	Execute o servidor de desenvolvimento:
+5.	Colete os arquivos estáticos para que eles sejam corretamente apresentados no projeto:
+
+```bash
+python manage.py collectstatic
+```
+
+
+6.	Execute o servidor de desenvolvimento:
 
 ```bash
 python manage.py runserver
 ```
 
+## 📬 Endpoints do Projeto
 
+### API
+
+#### 🔗 Webhook Receiver
+
+POST /webhook/
+
+Recebe eventos com os seguintes tipos:
+
+- NEW_CONVERSATION
+
+- NEW_MESSAGE
+
+- CLOSE_CONVERSATION
+
+Exemplo de payload:
+
+```json
+{
+    "type": "NEW_MESSAGE",
+    "timestamp": "2025-02-21T10:20:42.349308",
+    "data": {
+        "id": "49108c71-4dca-4af3-9f32-61bc745926e2",
+        "direction": "RECEIVED",
+        "content": "Olá, tudo bem?",
+        "conversation_id": "6a41b347-8d80-4ce9-84ba-7af66f369f6a"
+    }
+}
+```
+
+Consulta de Conversa:
+
+GET `localhost/conversations/{id}`
+
+Retorna o estado da conversa (OPEN ou CLOSED) e todas as mensagens relacionadas.
 ## 📌 Entrega e Requisitos
 
 Após concluir o desafio, envie o link do repositório para o e-mail tecnologia@realmate.com.br com seu nome e número do WhatsApp informados no e-mail.
