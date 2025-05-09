@@ -165,7 +165,7 @@ python manage.py runserver
 
 #### 🔗 Webhook Receiver
 
-POST /webhook/
+POST `/webhook/`
 
 Recebe eventos com os seguintes tipos:
 
@@ -195,6 +195,19 @@ Consulta de Conversa:
 GET `localhost/conversations/{id}`
 
 Retorna o estado da conversa (OPEN ou CLOSED) e todas as mensagens relacionadas.
+
+### Interfaces
+
+Você pode acessar interfaces de visualização da lista de conversas existentes pelo endereço
+
+`localhost/conversations/`
+
+Você pode acessar interfaces de visualização de detalhe de uma conversa existente pelo endereço
+
+`localhost/conversations/{id}`
+
+Ambas diretamente pelo navegador
+
 ## 📌 Entrega e Requisitos
 
 Após concluir o desafio, envie o link do repositório para o e-mail tecnologia@realmate.com.br com seu nome e número do WhatsApp informados no e-mail.
